@@ -18,6 +18,7 @@ import com.tale.extension.Theme;
 import com.tale.model.dto.Types;
 import com.tale.service.OptionsService;
 import com.tale.service.SiteService;
+import com.zaxxer.hikari.HikariDataSource;
 import jetbrick.template.JetGlobalContext;
 import jetbrick.template.resolver.GlobalResolver;
 import org.sql2o.Sql2o;
@@ -28,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tale初始化进程
@@ -54,10 +56,28 @@ public class WebContext implements BeanProcessor {
         if (blade.environment().hasKey("app.devMode")) {
             devMode = blade.environment().getBoolean("app.devMode", true);
         }
-        SqliteJdbc.importSql(devMode);
 
-        Sql2o sql2o = new Sql2o(SqliteJdbc.DB_SRC, null, null);
-        Base.open(sql2o);
+        Environment environment = blade.environment();
+        Map<String, Object> map = environment.getPrefix("jdbc");
+
+        String driver = map.get("driver").toString();
+        String url = map.get("url").toString();
+        String username = map.get("username").toString();
+        String password = map.get("password").toString();
+
+//        SqliteJdbc.importSql(devMode, driver, url, username, password);
+
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setDriverClassName(driver);
+        dataSource.setJdbcUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        dataSource.setIdleTimeout(6000);
+
+        Base.open(dataSource);
+//        Sql2o sql2o = new Sql2o(SqliteJdbc.DB_SRC, null, null);
+
         Commons.setSiteService(ioc.getBean(SiteService.class));
     }
 
@@ -69,7 +89,7 @@ public class WebContext implements BeanProcessor {
         macros.add(File.separatorChar + "comm" + File.separatorChar + "macros.html");
         // 扫描主题下面的所有自定义宏
         String themeDir = AttachController.CLASSPATH + "templates" + File.separatorChar + "themes";
-        File[] dir      = new File(themeDir).listFiles();
+        File[] dir = new File(themeDir).listFiles();
         for (File f : dir) {
             if (f.isDirectory() && Files.exists(Paths.get(f.getPath() + File.separatorChar + "macros.html"))) {
                 String macroName = File.separatorChar + "themes" + File.separatorChar + f.getName() + File.separatorChar + "macros.html";

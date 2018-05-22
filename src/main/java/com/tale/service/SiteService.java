@@ -21,6 +21,7 @@ import com.tale.utils.TaleUtils;
 import com.tale.utils.ZipUtils;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -50,7 +51,7 @@ public class SiteService {
         users.setPassword(pwd);
         users.setScreen_name(users.getUsername());
         users.setCreated(DateKit.nowUnix());
-        Integer uid = users.save();
+        BigInteger uid = users.save();
 
         try {
             String cp   = SiteService.class.getClassLoader().getResource("").getPath();
@@ -140,7 +141,7 @@ public class SiteService {
      * 查询文章归档
      */
     public List<Archive> getArchives() {
-        String sql = "select strftime('%Y年%m月', datetime(created, 'unixepoch') ) as date_str, count(*) as count  from t_contents " +
+        String sql = "select FROM_UNIXTIME(`created`, '%Y-%m-%d %H:%i:%S') as date_str, count(*) as count  from t_contents " +
                 "where type = 'post' and status = 'publish' group by date_str order by date_str desc";
         List<Archive> archives = new Archive().queryAll(sql);
         if (null != archives) {
@@ -153,7 +154,7 @@ public class SiteService {
 
     private Archive parseArchive(Archive archive) {
         String date_str = archive.getDate_str();
-        Date   sd       = DateKit.toDate(date_str + "01", "yyyy年MM月dd");
+        Date   sd       = DateKit.toDate(date_str, "yyyy-MM-dd HH:mm:ss");
         archive.setDate(sd);
         int      start    = DateKit.toUnix(sd);
         Calendar calender = Calendar.getInstance();

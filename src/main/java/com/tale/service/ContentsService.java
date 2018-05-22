@@ -16,6 +16,7 @@ import com.tale.model.entity.Relationships;
 import com.tale.utils.TaleUtils;
 import com.vdurmont.emoji.EmojiParser;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 /**
@@ -97,8 +98,9 @@ public class ContentsService {
         String tags       = contents.getTags();
         String categories = contents.getCategories();
 
-        Integer cid = contents.save();
+        BigInteger ccid = contents.save();
 
+        Integer cid = ccid.intValue();
         metasService.saveMetas(cid, tags, Types.TAG);
         metasService.saveMetas(cid, categories, Types.CATEGORY);
 

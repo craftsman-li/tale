@@ -9,6 +9,7 @@ import com.tale.model.entity.Contents;
 import com.tale.model.entity.Metas;
 import com.tale.model.entity.Relationships;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,7 +105,8 @@ public class MetasService {
             metas.setSlug(name);
             metas.setName(name);
             metas.setType(type);
-            mid = metas.save();
+            BigInteger mmid = metas.save();
+            mid = mmid.intValue();
         }
         if (mid != 0) {
             long count = new Relationships().where("cid", cid).and("mid", mid).count();
